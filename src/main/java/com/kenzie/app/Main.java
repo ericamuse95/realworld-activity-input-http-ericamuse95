@@ -1,9 +1,13 @@
 package com.kenzie.app;
 
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.net.URI;
 import java.io.IOException;
+import java.net.URL;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
@@ -11,48 +15,81 @@ import java.net.http.HttpResponse;
 
 public class Main {
     // Initialize the required constant variable here
-    static final String GET_URL = "";
+    static final String GET_URL = "http://www.boredapi.com/api/activity";
 
     //Formats URL query string with one property
     public static String formatURL(String URLString, String parameter, String value){
         //TODO: Fill out method and update return value
-        return "";
+        //returns a URL query with one parameter and value.
+        return URLString + "?" + parameter + "=" + value;
     }
 
     //Overload method: Formats URL query string with two properties
     public static String formatURL(String URLString, String parameter1, String value1,String parameter2, String value2){
         //TODO: Fill out method and update return value
-        return "";
+        return URLString + "?" + parameter1 + "=" + value1 + "&" + parameter2 + "=" + value2;
     }
     
     public static String getURLResponse(String URLString)  {
         //TODO: Fill out method and update return value
-        return "";
+        HttpClient client = HttpClient.newHttpClient();
+        URI uri = URI.create(URLString);
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(uri)
+                .header("Accept", "application/json")
+                .GET()
+                .build();
+        try{
+            HttpResponse<String> httpResponse = client.send(request,HttpResponse.BodyHandlers.ofString());
+            return httpResponse.body();
+        } catch (IOException | InterruptedException e){
+            return e.getMessage();
+        }
     }
     
     public static String formatActivityOutput(String jsonString){
         //TODO: Fill out method and update return value
-        return "";
+        try {
+            ObjectMapper objectMapper =  new ObjectMapper();
+            ActivityDTO activity = objectMapper.readValue(jsonString, ActivityDTO.class);
+            if (activity.getActivity() != "No activity found") {
+                return "Activity: " + activity.getActivity() + "\n" + "Type: " + activity.getType() + "\n" + "Participants: " + activity.getParticipants() + "\n" + "Price: " + activity.getPrice() + "\n";
+            } else {
+                return "No activity found";
+            }
+        } catch (JsonProcessingException exception){
+            return exception.getMessage();
+        }
+
     }
 
     public static String getActivityRandom(String URL) {
         //TODO: Fill out method and update return value
-        return "";
+        String response = getURLResponse(URL);
+
+        return response;
     }
 
     public static String getActivityType(String URL, String type) throws com.fasterxml.jackson.core.JsonProcessingException,IOException{
         //TODO: Fill out method and update return value
-        return "";
+        String newURL = formatURL(URL, "type", type);
+        String response = getURLResponse(newURL);
+        return response;
     }
 
     public static String getActivityWithPrice(String URL, double price) throws com.fasterxml.jackson.core.JsonProcessingException,IOException{
         //TODO: Fill out method and update return value
-        return "";
+
+        String newURL = formatURL(URL, "price", String.valueOf(price));
+        String response = getURLResponse(newURL);
+        return response;
     }
 
     public static String getActivityTypeForGroup(String URL, String type, int numParticipants) {
         //TODO: Fill out method and update return value
-        return "";
+        String newURL = formatURL(URL, "type", type, "participants", String.valueOf(numParticipants));
+        String response = getURLResponse(newURL);
+        return response;
     }
 
     /** Do not modify main method **/
